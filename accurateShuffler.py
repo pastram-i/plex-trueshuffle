@@ -1,3 +1,4 @@
+#Required packages
 from plexapi.myplex import MyPlexAccount
 from plexapi.utils import millisecondToHumanstr
 from plexapi.client import PlexClient
@@ -5,24 +6,25 @@ import config, random, re, time
 
 myAccount = MyPlexAccount(config.username,config.password)
 myServers = []
-
 for server in config.servers:
     myServers.append(myAccount.resource(server).connect())
-
 myShows = {}
 myQueue = []
 
+#Pulls shows from playlists on each server
 for server in myServers:
     for playlist in server.playlists():
         for episode in playlist.items():
             if episode.grandparentTitle not in myShows.keys():
-                myShows[episode.grandparentTitle] = []
+                myShows[episode.grandparentTitle] = [] #Will add all unique show names from all servers
             if episode not in myShows[episode.grandparentTitle]:
-                myShows[episode.grandparentTitle].append(episode)
+                myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
 
+#Organizing shows by 's##e##' text at the end of the <Episode> object
 for show in myShows.keys():
     myShows[show].sort(key=lambda x: re.sub(r'Episode:.+?-s', '',str(x)))
 
+#Adds a queue of 100 episodes to play
 while len(myQueue) < 100:
     i=0
     toAdd = random.choice(list(myShows))
@@ -34,6 +36,7 @@ while len(myQueue) < 100:
             i+=1
             continue
 
+#Starts to play queue, using the PlexServer attribute in the Episode object
 for playEpisode in myQueue:
     print(
         '''----------------------------
