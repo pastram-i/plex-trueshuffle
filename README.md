@@ -1,6 +1,6 @@
 # WIP
 
-Allows users to create an off platform queue of Episodes. This queue will:
+Allows users to create an off platform queue of Episodes. This queue will -
 
  - Be created from shows in playlists
  	- Personally I create a playlist on each server
@@ -20,14 +20,16 @@ Allows users to create an off platform queue of Episodes. This queue will:
  - pip
  - [PlexAPI](https://github.com/pkkid/python-plexapi)
 
-## Config
-- In `config.py` you'll have to update four items:
+## Config:
+- In `config.py` you'll have to update four items -
 	- `username` should be a string of your plex account name
 	- `password` should be a string of your plex account password
 	- `servers` should be a list of strings of the server(s) name
 		- **Not** server provider account name
 	- `client` should be a string of your client to send requests
 
+## To run:
+Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using `python <path>/<to>/<file>/accurateShuffler.py`
 
 ## Things to add:
  - Movies
