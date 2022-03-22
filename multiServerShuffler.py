@@ -2,6 +2,7 @@
 from plexapi.myplex import MyPlexAccount
 from plexapi.utils import millisecondToHumanstr
 from plexapi.client import PlexClient
+from plexapi.exceptions import BadRequest
 import config, random, re, time
 
 myAccount = MyPlexAccount(config.username,config.password)
@@ -49,22 +50,10 @@ for playEpisode in myQueue:
         )
 
     plex = myAccount.resource(config.servers[myServers.index(playEpisode._server)]).connect()
-    
-    print(plex.clients())
-    for client in plex.clients():
-        print(client.title)
-
-    client = plex.client(config.client)
-    try:
-        device_url = client.url("/")
-    except plexapi.exceptions.BadRequest:
-        device_url = "127.0.0.1"
-    if "127.0.0.1" in device_url:
-        client.proxyThroughServer()
-
+    print(myAccount.devices())
+    client = plex.client(myAccount.devices()[0])
     client.playMedia(playEpisode)
 
     time.sleep(playEpisode.duration/1000)
-
     while client.isPlayingMedia():
         time.sleep(10000)

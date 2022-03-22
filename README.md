@@ -26,7 +26,9 @@ Allows users to create an off platform queue of Episodes. This queue will -
 	- `password` should be a string of your plex account password
 	- `servers` should be a list of strings of the server(s) name
 		- **Not** server provider account name
-	- `client` should be a string of your client to send requests
+	- ~~`client` should be a string of your client to send requests~~
+        - `client` is no longer needed, the script will use your most recent connected client in `Plex=>Authorized Devices`
+            - If the desired client isn't the most recent, just reconnect/refresh and it's value will be updated allowing the script to grab the (correct) first
 
 ## To run:
 Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using - 
