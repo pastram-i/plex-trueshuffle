@@ -24,7 +24,7 @@ Allows users to create an off platform queue of Episodes. This queue will:
 - In `config.py` you'll have to update four items:
 	- `username` should be a string of your plex account name
 	- `password` should be a string of your plex account password
-	- `servers` should be a list of the server name
+	- `servers` should be a list of strings of the server(s) name
 		- **Not** server provider account name
 	- `client` should be a string of your client to send requests
 
