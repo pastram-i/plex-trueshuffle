@@ -29,7 +29,8 @@ Allows users to create an off platform queue of Episodes. This queue will -
 	- `client` should be a string of your client to send requests
 
 ## To run:
-Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using `python <path>/<to>/<file>/accurateShuffler.py`
+Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using - 
+`python <path>/<to>/<file>/accurateShuffler.py`
 
 ## Things to add:
  - Movies
