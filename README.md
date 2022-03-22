@@ -31,7 +31,7 @@ Allows users to create an off platform queue of Episodes. This queue will -
             - If the desired client isn't the most recent, just reconnect/refresh and it's value will be updated allowing the script to grab the (correct) first
 
 ## To run:
-Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using - 
+Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using 
 
 `python <path>/<to>/<file>/multiServerShuffler.py`
 
