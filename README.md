@@ -33,7 +33,7 @@ Allows users to create an off platform queue of Episodes. This queue will -
 ## To run:
 Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd` and/or run using - 
 
-`python <path>/<to>/<file>/accurateShuffler.py`
+`python <path>/<to>/<file>/multiServerShuffler.py`
 
 ## Things to add:
  - Movies
