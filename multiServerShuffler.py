@@ -22,12 +22,12 @@ for server in myServers:
                 myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
 
 #Organizing shows by 's##e##' value in the Episode.
-#Can use track for audiobooks too!
+#Can use index for audiobooks too!
 for value in myShows.values():
     try:
         value.sort(key=lambda x: x.seasonEpisode)
     except:
-        value.sort(key=lambda x: x.track)
+        value.sort(key=lambda x: x.index)
 
 #Adds a queue of 100 episodes to play
 while len(myQueue) < 100:
