@@ -1,4 +1,5 @@
-# WIP
+#Multi (Or single) server shuffle for plex
+The goal is to watch shows in order, but shuffle between shows after each plays
 
 Allows users to create an off platform queue of Episodes. This queue will -
 
