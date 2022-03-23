@@ -21,9 +21,13 @@ for server in myServers:
             if episode not in myShows[episode.grandparentTitle]:
                 myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
 
-#Organizing shows by 's##e##' text at the end of the <Episode> object
+#Organizing shows by 's##e##' value in the Episode.
+#Can use track for audiobooks too!
 for value in myShows.values():
-    value.sort(key=lambda x: re.sub(r'Episode:.+?-s', '',str(x)))
+    try:
+        value.sort(key=lambda x: x.seasonEpisode)
+    except:
+        value.sort(key=lambda x: x.track)
 
 #Adds a queue of 100 episodes to play
 while len(myQueue) < 100:
@@ -51,7 +55,7 @@ for playEpisode in myQueue:
 
     client = plextv_clients[0].connect()
     client.playMedia(playEpisode)
-
+    print(f'Sleeping for: {playEpisode.duration / 1000} seconds')
     time.sleep(playEpisode.duration/1000)
     while client.isPlayingMedia():
-        time.sleep(10000)
+        time.sleep(60)
