@@ -6,9 +6,9 @@ from plexapi.exceptions import BadRequest
 import config, random, re, time
 
 myAccount = MyPlexAccount(config.username,config.password)
-myServers = []
-for server in config.servers:
-    myServers.append(myAccount.resource(server).connect())
+plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
+myServers = [myAccount.resource(server).connect() for server in config.servers]
+
 myShows = {}
 myQueue = []
 
@@ -22,8 +22,8 @@ for server in myServers:
                 myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
 
 #Organizing shows by 's##e##' text at the end of the <Episode> object
-for show in myShows.keys():
-    myShows[show].sort(key=lambda x: re.sub(r'Episode:.+?-s', '',str(x)))
+for value in myShows.values():
+    value.sort(key=lambda x: re.sub(r'Episode:.+?-s', '',str(x)))
 
 #Adds a queue of 100 episodes to play
 while len(myQueue) < 100:
@@ -45,13 +45,11 @@ for playEpisode in myQueue:
         Season:                 {}
         Episode:                {}
         Full Name:              {}
-        Length (HH:MM:SS:MMMM): {}'''
-        .format(playEpisode.grandparentTitle,playEpisode.parentTitle,playEpisode.title,str(playEpisode),millisecondToHumanstr(playEpisode.duration))
+        Length (HH:MM:SS:MMMM): {}
+        '''.format(playEpisode.grandparentTitle,playEpisode.parentTitle,playEpisode.title,str(playEpisode),millisecondToHumanstr(playEpisode.duration))
         )
 
-    plex = myAccount.resource(config.servers[myServers.index(playEpisode._server)]).connect()
-    print(myAccount.devices())
-    client = plex.client(myAccount.devices()[0])
+    client = plextv_clients[0].connect()
     client.playMedia(playEpisode)
 
     time.sleep(playEpisode.duration/1000)
