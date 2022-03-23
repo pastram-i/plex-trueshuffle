@@ -15,8 +15,8 @@ Allows users to create an off platform queue of Episodes. This queue will -
 
 ## Requirements:
  - Python
- 	- Comes with config, random, re, and time
- 		- These are required if not for some reason though
+ 	- Comes with `config`, `random`, `re`, and `time`
+ 		- These are required if you managed to skip them somehow
  - pip
  - [PlexAPI](https://github.com/pkkid/python-plexapi)
 
