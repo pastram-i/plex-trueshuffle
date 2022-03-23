@@ -39,3 +39,4 @@ Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd`
 ## Things to add:
  - Movies
  - Podcast episodes
+ - I wonder if I can make this into a browser extension...
