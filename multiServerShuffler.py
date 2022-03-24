@@ -1,9 +1,8 @@
 #Required packages
 from plexapi.myplex import MyPlexAccount
 from plexapi.utils import millisecondToHumanstr
-from plexapi.client import PlexClient
-from plexapi.exceptions import BadRequest
-import config, random, re, time
+from plexapi.library import Library, Hub
+import config, random, time
 
 myAccount = MyPlexAccount(config.username,config.password)
 plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
@@ -21,7 +20,11 @@ for server in myServers:
             if episode not in myShows[episode.grandparentTitle]:
                 myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
 
-#Organizing shows by 's##e##' value in the Episode.
+'''if config.includePodcasts:
+    plex = myAccount.resource()'''
+
+
+#Organizing shows by 's##e##' value in the Episode object.
 #Can use index for audiobooks too!
 for value in myShows.values():
     try:
@@ -36,26 +39,49 @@ while len(myQueue) < 100:
     for episode in myShows[toAdd]:
         if episode.viewCount <= i and episode not in myQueue:
             myQueue.append(episode)
+            i=0
             break
         else:
             i+=1
             continue
 
 #Starts to play queue, using the PlexServer attribute in the Episode object
-for playEpisode in myQueue:
-    print(
+while myQueue:
+    userCom = input('To start, skip, or play next when episode is done, hit enter. You can also type "quit" to exit.\n')
+    if userCom == '':
+        playEpisode = myQueue.pop(0)
+        print(
         '''----------------------------
-        Now playing:            {}
+        Now playing:            {} {}
         Season:                 {}
         Episode:                {}
-        Full Name:              {}
         Length (HH:MM:SS:MMMM): {}
-        '''.format(playEpisode.grandparentTitle,playEpisode.parentTitle,playEpisode.title,str(playEpisode),millisecondToHumanstr(playEpisode.duration))
+        '''.format(playEpisode.grandparentTitle,playEpisode.seasonEpisode, playEpisode.parentTitle,playEpisode.title,millisecondToHumanstr(playEpisode.duration))
+        )
+
+        client = plextv_clients[0].connect()
+        client.playMedia(playEpisode)
+        continue
+    elif userCom == 'quit':
+        break
+    else:
+        input('Invalid command. Press enter to continue.')
+        continue
+
+#An old way, saving while I trial the new way
+'''for playEpisode in myQueue:
+    print(
+        ----------------------------
+        Now playing:            {} {}
+        Season:                 {}
+        Episode:                {}
+        Length (HH:MM:SS:MMMM): {}
+        .format(playEpisode.grandparentTitle,playEpisode.seasonEpisode, playEpisode.parentTitle,playEpisode.title,str(playEpisode),millisecondToHumanstr(playEpisode.duration))
         )
 
     client = plextv_clients[0].connect()
     client.playMedia(playEpisode)
-    print(f'Sleeping for: {playEpisode.duration / 1000} seconds')
-    time.sleep(playEpisode.duration/1000)
+    print(f'Sleeping for: {(playEpisode.duration / 1000)+30} seconds')
+    time.sleep((playEpisode.duration/1000)+30)
     while client.isPlayingMedia():
-        time.sleep(60)
+        time.sleep(60)'''
