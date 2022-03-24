@@ -4,6 +4,22 @@ from plexapi.utils import millisecondToHumanstr
 from plexapi.library import Library, Hub
 import config, random, time
 
+print('''
+Some really quick reminders:
+ - Add new shows to your playlist(s)!
+ - Add new episodes to your playlist(s)!
+ - Depending on the amount of servers/shows/episodes - give me a minute or so to get started............
+
+    Take a milk while you wait
+            _____
+           j_____j
+          /_____/\\
+          |_(~)_| |
+          | )"( | |
+          |(@_@)| |  
+          |_____|,'
+''')
+
 myAccount = MyPlexAccount(config.username,config.password)
 plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
 myServers = [myAccount.resource(server).connect() for server in config.servers]
@@ -47,15 +63,20 @@ while len(myQueue) < 100:
 
 #Starts to play queue, using the PlexServer attribute in the Episode object
 while myQueue:
-    userCom = input('To start, skip, or play next when episode is done, hit enter. You can also type "quit" to exit.\n')
+    userCom = input('''
+    ****************************
+    To start, skip, or play next when episode is done, hit enter. You can also type "quit" to exit.
+    ****************************\n''')
     if userCom == '':
         playEpisode = myQueue.pop(0)
         print(
-        '''----------------------------
-        Now playing:            {} {}
-        Season:                 {}
-        Episode:                {}
-        Length (HH:MM:SS:MMMM): {}
+        '''
+    ----------------------------
+    Now playing:            {} {}
+    Season:                 {}
+    Episode:                {}
+    Length (HH:MM:SS:MMMM): {}
+    ----------------------------
         '''.format(playEpisode.grandparentTitle,playEpisode.seasonEpisode, playEpisode.parentTitle,playEpisode.title,millisecondToHumanstr(playEpisode.duration))
         )
 
