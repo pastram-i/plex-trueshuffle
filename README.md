@@ -38,6 +38,8 @@ Open a `terminal` or `cmd` depending on your OS. Navigate to the file using `cd`
 `python <path>/<to>/<file>/multiServerShuffler.py`
 
 ## Things to add:
- - Movies
+ - Movies, this may even work now? idk haven't tested
  - Podcast episodes
  - I wonder if I can make this into a browser extension...
+ - An SQL lite db could probably cut down the time to load
+	- Probably just reload db button to do on command

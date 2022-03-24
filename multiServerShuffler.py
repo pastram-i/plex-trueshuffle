@@ -13,7 +13,7 @@ Some really quick reminders:
     Take a milk while you wait
             _____
            j_____j
-          /_____/\\
+          /_____/_\\
           |_(~)_| |
           | )"( | |
           |(@_@)| |  
