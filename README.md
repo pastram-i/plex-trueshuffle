@@ -4,10 +4,10 @@ The goal is to watch episodes in order, but shuffle between shows after each pla
 Allows users to create an off platform queue of Episodes. This queue will -
 
  - Be created from shows in playlists
- 	# Create a playlist on each server
+ 	- Create a playlist on each server
  		- Go through shows in server library and just click `Add to => Playlist`
- 	# It's best to do this on a show level, to add all episodes
- 	# Playlist name **does not** matter.
+ 	- It's best to do this on a show level, to add all episodes
+ 	- Playlist name **does not** matter.
  - Play the next episode in order for that show
  - Only persist if the script is running
  	- It may take a few minutes to start depending on the number of servers/shows you follow
