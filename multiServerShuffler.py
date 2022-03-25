@@ -5,6 +5,9 @@ from plexapi.library import Library, Hub
 import plexapi.video, plexapi.audio
 import config, random, time, sqlite3
 
+showDB = sqlite3.connect('myShows.db')
+cursor = showDB.cursor()
+
 def playVideo(playEpisode):
     print(
     '''
@@ -101,12 +104,22 @@ for value in myShows.values():
 
 #Starts to play queue, using the PlexServer attribute in the Episode object
 while myShows:
-    userCom = input('''
+    userStart = input('''
     ****************************
-    To start, skip, or play next when episode is done, hit enter.
-    You can also type "quit" to exit.
+    Type "create" to build DB.
+     - Note - if one exists it will overwrite it, use to reset as needed.
+    Type "update" to refresh DB.
+     - Note - will try to find new or missing episodes from your sources.
+    Press enter to play media.
+     - Note - requires DB to exist.
+    Type "quit" to exit.
     ****************************\n''')
-    if userCom == '':
+
+    if userStart.lower == 'create':
+        pass
+    elif userStart.lower == 'update':
+        pass
+    elif userStart.lower == '':
         toPlay = random.choice(list(myShows))
         i=0
 
@@ -134,7 +147,7 @@ while myShows:
             print('Could not connect to that server :(')
             continue
         continue
-    elif userCom == 'quit':
+    elif userStart == 'quit':
         break
     else:
         input('Invalid command. Press enter to continue.')
