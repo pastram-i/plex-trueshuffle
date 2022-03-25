@@ -2,6 +2,7 @@
 from plexapi.myplex import MyPlexAccount
 from plexapi.utils import millisecondToHumanstr
 from plexapi.library import Library, Hub
+import plexapi.video
 import config, random, time
 
 print('''
@@ -33,17 +34,17 @@ for server in config.servers:
         continue
 
 myShows = {}
-myQueue = []
 
 #Pulls shows from playlists on each server
 for server in myServers:
     if server != ':(':
         for playlist in server.playlists():
             for episode in playlist.items():
-                if episode.grandparentTitle not in myShows.keys():
-                    myShows[episode.grandparentTitle] = [] #Will add all unique show names from all servers
-                if episode not in myShows[episode.grandparentTitle]:
-                    myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
+                if type(episode) == plexapi.video.Episode:
+                    if episode.grandparentTitle not in myShows.keys():
+                        myShows[episode.grandparentTitle] = [] #Will add all unique show names from all servers
+                    if episode not in myShows[episode.grandparentTitle]:
+                        myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
 
 #Organizing shows by 's##e##' value in the Episode object.
 #Can use index for audiobooks too!
@@ -53,28 +54,24 @@ for value in myShows.values():
     except:
         value.sort(key=lambda x: x.index)
 
-#Adds a queue of 100 episodes to play
-while len(myQueue) < 100:
-    i=0
-    toAdd = random.choice(list(myShows))
-    for episode in myShows[toAdd]:
-        if episode.viewCount <= i and episode not in myQueue:
-            myQueue.append(episode)
-            i=0
-            break
-        else:
-            i+=1
-            continue
-
 #Starts to play queue, using the PlexServer attribute in the Episode object
-while myQueue:
+while myShows:
+    i=0
     userCom = input('''
     ****************************
     To start, skip, or play next when episode is done, hit enter.
     You can also type "quit" to exit.
     ****************************\n''')
     if userCom == '':
-        playEpisode = myQueue.pop(0)
+        toPlay = random.choice(list(myShows))
+        for episode in myShows[toPlay]:
+            if episode.viewCount <= i:
+                playEpisode = episode
+                i=0
+                break
+            else:
+                i+=1
+                continue
         print(
         '''
     ----------------------------
