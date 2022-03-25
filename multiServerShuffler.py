@@ -3,7 +3,7 @@ from plexapi.myplex import MyPlexAccount
 from plexapi.utils import millisecondToHumanstr
 from plexapi.library import Library, Hub
 import plexapi.video, plexapi.audio
-import config, random, time
+import config, random, time, sqlite3
 
 def playVideo(playEpisode):
     print(

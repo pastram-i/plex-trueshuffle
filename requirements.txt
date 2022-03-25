@@ -2,3 +2,4 @@ plexapi
 config
 random
 time
+sqlite3
