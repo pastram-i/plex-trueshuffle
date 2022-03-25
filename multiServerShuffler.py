@@ -88,8 +88,12 @@ for server in myServers:
             for episode in playlist.items():
                 if episode.grandparentTitle not in myShows.keys():
                     myShows[episode.grandparentTitle] = [] #Will add all unique show names from all servers
-                if episode not in myShows[episode.grandparentTitle]:
-                    myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
+                if type(episode) == plexapi.video.Episode:
+                    if episode.seasonEpisode not in(x.seasonEpisode for x in myShows[episode.grandparentTitle]):
+                        myShows[episode.grandparentTitle].append(episode)
+                elif type(episode) == plexapi.audio.Track:
+                    if episode.index not in(x.index for x in myShows[episode.grandparentTitle]):
+                        myShows[episode.grandparentTitle].append(episode)
 
 #Organizing shows by 's##e##' value in the Episode object.
 #Can use index for audiobooks too!
@@ -134,7 +138,7 @@ while myShows:
             print('Could not connect to that server :(')
             continue
         continue
-    elif userCom == 'quit':
+    elif userCom.lower == 'quit':
         break
     else:
         input('Invalid command. Press enter to continue.')
