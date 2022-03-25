@@ -1,5 +1,5 @@
 # Multi (Or single) server shuffle for plex
-The goal is to watch episodes in order, but shuffle between shows after each plays
+The goal is to watch episodes in order, but shuffle between shows after each plays.
 
 Allows users to create an off platform queue of Episodes. This queue will -
 
@@ -13,6 +13,7 @@ Allows users to create an off platform queue of Episodes. This queue will -
  	- It may take a few minutes to start depending on the number of servers/shows you follow
  - Display information on an episode as it sends the request to play it
  - Set audio and subtitles
+ - **Now include audiobooks and chapters as well**
 
 ## Requirements:
 ```bash
@@ -57,4 +58,4 @@ You can also:
 	- Probably just reload db button to do on command
  - Querying new episodes for all shows, from all servers
  - Scan for missing episodes from other servers
- - Implement tracks for audiobooks
+ - ~~Implement tracks for audiobooks~~ Now supporting audiobooks
