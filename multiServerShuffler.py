@@ -67,10 +67,11 @@ Some really quick reminders:
           |_____|,'
 ''')
 
+print('Logging in to Plex...')
 myAccount = MyPlexAccount(config.username,config.password)
 plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
 myServers = []
-
+print('Adding servers...')
 for server in config.servers:
     try:
         myServers.append(myAccount.resource(server).connect())
@@ -80,7 +81,7 @@ for server in config.servers:
         continue
 
 myShows = {}
-
+print('Adding shows...')
 #Pulls shows from playlists on each server
 for server in myServers:
     if server != ':(':
@@ -95,15 +96,21 @@ for server in myServers:
                     if episode.index not in(x.index for x in myShows[episode.grandparentTitle]):
                         myShows[episode.grandparentTitle].append(episode)
 
+print('Organizing shows...')
 #Organizing shows by 's##e##' value in the Episode object.
 #Can use index for audiobooks too!
 for value in myShows.values():
     try:
         value.sort(key=lambda x: x.seasonEpisode)
+        for ep in value:
+            if value[0].seasonEpisode.startswith('s00'):
+                value.append(value.pop(ep))
     except:
         value.sort(key=lambda x: x.index)
 
 #Starts to play queue, using the PlexServer attribute in the Episode object
+print('Ready!')
+
 while myShows:
     userCom = input('''
     ****************************
@@ -138,7 +145,7 @@ while myShows:
             print('Could not connect to that server :(')
             continue
         continue
-    elif userCom.lower == 'quit':
+    elif userCom == 'quit':
         break
     else:
         input('Invalid command. Press enter to continue.')
