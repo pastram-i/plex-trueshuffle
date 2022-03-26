@@ -118,6 +118,7 @@ while True:
         break
     elif userStart == '':
         plextv_clients = [x for x in MyPlexAccount(config.username,config.password).resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
+
         toPlay = random.choice(list(myShows))
         i=0
 
@@ -146,23 +147,3 @@ while True:
     else:
         input('Invalid command. Press enter to continue.')
         continue
-
-
-
-
-
-
-
-
-
-
-
-myShows = {}
-
-#Organizing shows by 's##e##' value in the Episode object.
-#Can use index for audiobooks too!
-for value in myShows.values():
-    try:
-        value.sort(key=lambda x: x.seasonEpisode)
-    except:
-        value.sort(key=lambda x: x.index)
