@@ -8,6 +8,47 @@ import config, random, time, sqlite3
 showDB = sqlite3.connect('myShows.db')
 cursor = showDB.cursor()
 
+def serverConnects():
+    print('Connecting to servers...')
+    provideMilk()
+    myAccount = MyPlexAccount(config.username,config.password)
+    myServers = []
+
+    for server in config.servers:
+        try:
+            myServers.append(myAccount.resource(server).connect())
+        except:
+            print(f"Could not connect to server: {server} :(")
+            myServers.append(':(')
+            continue
+    return myServers
+def populateShows(myServers):
+    print('Populating shows...')
+    provideMilk()
+    for server in myServers:
+        if server != ':(':
+            for playlist in server.playlists():
+                for episode in playlist.items():
+                    cursor.execute('''
+                    INSERT INTO shows (Show, Season, Episode, Title, Server, Index, viewCount)
+                    VALUES ({},{},{},{},{},{},{})
+                    '''.format(episode.grandparentTitle,episode.parentTitle,episode.seasonEpisode, episode.Title,server.name,episode.index,episode.viewCount))
+                    showDB.commit()
+def scanForUpdates(myServers):
+    pass
+def provideMilk():
+    print('''
+This make take a little while....
+
+    Take a milk while you wait
+            _____
+           j_____j
+          /_____/_\\
+          |_(~)_| |
+          | )"( | |
+          |(@_@)| |  
+          |_____|,'
+''')
 def playVideo(playEpisode):
     print(
     '''
@@ -40,7 +81,6 @@ Length (HH:MM:SS:MMMM): {}
                 continue
 
     return playEpisode
-
 def playAudio(playTrack):
     print(
     '''
@@ -54,56 +94,8 @@ Length (HH:MM:SS:MMMM): {}
     )
     return playTrack
 
-print('''
-Some really quick reminders:
- - Add new shows to your playlist(s)!
- - Add new episodes to your playlist(s)!
- - Depending on the amount of servers/shows/episodes - give me a minute or so to get started............
 
-    Take a milk while you wait
-            _____
-           j_____j
-          /_____/_\\
-          |_(~)_| |
-          | )"( | |
-          |(@_@)| |  
-          |_____|,'
-''')
-
-myAccount = MyPlexAccount(config.username,config.password)
-plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
-myServers = []
-
-for server in config.servers:
-    try:
-        myServers.append(myAccount.resource(server).connect())
-    except:
-        print(f"Could not connect to server: {server} :(")
-        myServers.append(':(')
-        continue
-
-myShows = {}
-
-#Pulls shows from playlists on each server
-for server in myServers:
-    if server != ':(':
-        for playlist in server.playlists():
-            for episode in playlist.items():
-                if episode.grandparentTitle not in myShows.keys():
-                    myShows[episode.grandparentTitle] = [] #Will add all unique show names from all servers
-                if episode not in myShows[episode.grandparentTitle]:
-                    myShows[episode.grandparentTitle].append(episode) #Will add all unique episodes from all servers
-
-#Organizing shows by 's##e##' value in the Episode object.
-#Can use index for audiobooks too!
-for value in myShows.values():
-    try:
-        value.sort(key=lambda x: x.seasonEpisode)
-    except:
-        value.sort(key=lambda x: x.index)
-
-#Starts to play queue, using the PlexServer attribute in the Episode object
-while myShows:
+while True:
     userStart = input('''
     ****************************
     Type "create" to build DB.
@@ -115,11 +107,17 @@ while myShows:
     Type "quit" to exit.
     ****************************\n''')
 
-    if userStart.lower == 'create':
+    if userStart == 'create':
+        cursor.execute('''CREATE TABLE IF NOT EXISTS shows
+        (ID INT PRIMARY KEY, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, Index INT, viewCount INT)''')
+        showDB.commit()
+        populateShows(serverConnects())
+    elif userStart == 'update':
         pass
-    elif userStart.lower == 'update':
-        pass
-    elif userStart.lower == '':
+    elif userStart == 'quit':
+        break
+    elif userStart == '':
+        plextv_clients = [x for x in MyPlexAccount(config.username,config.password).resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
         toPlay = random.choice(list(myShows))
         i=0
 
@@ -139,16 +137,32 @@ while myShows:
         else:
             print('Weird, I don\'t recognize this type of media, sorry :(\nFeel free to submit a bug on github for me to fix!')
             continue
-
         try:
             client = plextv_clients[0].connect()
             client.playMedia(playEpisode)
         except:
             print('Could not connect to that server :(')
             continue
-        continue
-    elif userStart == 'quit':
-        break
     else:
         input('Invalid command. Press enter to continue.')
         continue
+
+
+
+
+
+
+
+
+
+
+
+myShows = {}
+
+#Organizing shows by 's##e##' value in the Episode object.
+#Can use index for audiobooks too!
+for value in myShows.values():
+    try:
+        value.sort(key=lambda x: x.seasonEpisode)
+    except:
+        value.sort(key=lambda x: x.index)
