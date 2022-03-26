@@ -103,7 +103,7 @@ for value in myShows.values():
     try:
         value.sort(key=lambda x: x.seasonEpisode)
         for ep in value:
-            if value[0].seasonEpisode.startswith('s00'):
+            if ep.seasonEpisode.startswith('s00'):
                 value.append(value.pop(ep))
     except:
         value.sort(key=lambda x: x.index)
