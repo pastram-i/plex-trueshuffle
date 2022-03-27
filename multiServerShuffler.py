@@ -4,8 +4,9 @@ from plexapi.utils import millisecondToHumanstr
 from plexapi.library import Library, Hub
 import plexapi.video, plexapi.audio
 import config, random, time, sqlite3
+from pprint import pprint
 
-showDB = sqlite3.connect('myShows.db')
+showDB = sqlite3.connect('myShows')
 cursor = showDB.cursor()
 
 def serverConnects():
@@ -29,11 +30,17 @@ def populateShows(myServers):
         if server != ':(':
             for playlist in server.playlists():
                 for episode in playlist.items():
-                    cursor.execute('''
-                    INSERT INTO shows (Show, Season, Episode, Title, Server, Index, viewCount)
-                    VALUES ({},{},{},{},{},{},{})
-                    '''.format(episode.grandparentTitle,episode.parentTitle,episode.seasonEpisode, episode.Title,server.name,episode.index,episode.viewCount))
-                    showDB.commit()
+                    try:
+                        cursor.execute('''
+                        INSERT INTO shows (Type, Show, Season, Episode, Title, Server, ViewCount)
+                        VALUES (?,?,?,?,?,?,?);
+                        ''',(str(type(episode)),episode.grandparentTitle, episode.parentTitle, episode.seasonEpisode, episode.title, server.friendlyName, episode.viewCount))
+                    except:
+                        cursor.execute('''
+                        INSERT INTO shows (Type, Show, Season, Episode, Title, Server, ViewCount)
+                        VALUES (?,?,?,?,?,?,?);
+                        ''',(str(type(episode)),episode.grandparentTitle, episode.parentTitle, episode.index, episode.title, server.friendlyName, episode.viewCount))
+            showDB.commit()
 def scanForUpdates(myServers):
     pass
 def provideMilk():
@@ -94,7 +101,6 @@ Length (HH:MM:SS:MMMM): {}
     )
     return playTrack
 
-
 while True:
     userStart = input('''
     ****************************
@@ -108,8 +114,9 @@ while True:
     ****************************\n''')
 
     if userStart == 'create':
-        cursor.execute('''CREATE TABLE IF NOT EXISTS shows
-        (ID INT PRIMARY KEY, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, Index INT, viewCount INT)''')
+        cursor.execute(''' DROP TABLE IF EXISTS shows''')
+        cursor.execute('''CREATE TABLE shows
+        (ID INT PRIMARY KEY, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT)''')
         showDB.commit()
         populateShows(serverConnects())
     elif userStart == 'update':
