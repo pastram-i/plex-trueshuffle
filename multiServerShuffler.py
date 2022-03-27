@@ -102,6 +102,8 @@ Length (HH:MM:SS:MMMM): {}
     '''.format(playTrack.grandparentTitle,playTrack.parentTitle,playTrack.title,millisecondToHumanstr(playTrack.duration))
     )
     return playTrack
+def nextUp():
+    pass
 
 while True:
     userStart = input('''
