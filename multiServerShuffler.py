@@ -24,6 +24,7 @@ def serverConnects():
             continue
     return myServers
 def populateShows(myServers):
+    i= 0
     print('Populating shows...')
     provideMilk()
     for server in myServers:
@@ -32,14 +33,15 @@ def populateShows(myServers):
                 for episode in playlist.items():
                     try:
                         cursor.execute('''
-                        INSERT INTO shows (Type, Show, Season, Episode, Title, Server, ViewCount)
-                        VALUES (?,?,?,?,?,?,?);
-                        ''',(str(type(episode)),episode.grandparentTitle, episode.parentTitle, episode.seasonEpisode, episode.title, server.friendlyName, episode.viewCount))
+                        INSERT INTO shows (ID, Type, Show, Season, Episode, Title, Server, ViewCount)
+                        VALUES (?,?,?,?,?,?,?,?);
+                        ''',(i, str(type(episode)),episode.grandparentTitle, episode.parentTitle, episode.seasonEpisode, episode.title, server.friendlyName, episode.viewCount))
                     except:
                         cursor.execute('''
                         INSERT INTO shows (Type, Show, Season, Episode, Title, Server, ViewCount)
                         VALUES (?,?,?,?,?,?,?);
                         ''',(str(type(episode)),episode.grandparentTitle, episode.parentTitle, episode.index, episode.title, server.friendlyName, episode.viewCount))
+                    i+=1
             showDB.commit()
 def scanForUpdates(myServers):
     pass
@@ -116,7 +118,7 @@ while True:
     if userStart == 'create':
         cursor.execute(''' DROP TABLE IF EXISTS shows''')
         cursor.execute('''CREATE TABLE shows
-        (ID INT AUTO_INCREMENT, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT)''')
+        (ID int, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT)''')
         showDB.commit()
         populateShows(serverConnects())
     elif userStart == 'update':
