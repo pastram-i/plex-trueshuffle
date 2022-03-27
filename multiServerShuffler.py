@@ -116,7 +116,7 @@ while True:
     if userStart == 'create':
         cursor.execute(''' DROP TABLE IF EXISTS shows''')
         cursor.execute('''CREATE TABLE shows
-        (ID INT PRIMARY KEY, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT)''')
+        (ID INT AUTO_INCREMENT, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT)''')
         showDB.commit()
         populateShows(serverConnects())
     elif userStart == 'update':
