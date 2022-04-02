@@ -6,10 +6,11 @@ import config, random, sqlite3
 from pprint import pprint
 from datetime import datetime
 
+pprint([ep.grandparentTitle for ep in [list(set([p.items() for p in connected.playlists()][0]))]])
+
 showDB = sqlite3.connect('myShows.db')
 c = showDB.cursor()
 myAccount = MyPlexAccount(config.username,config.password)
-AllMyShows = []
 
 def CallDB (query, args=()):
     return c.execute(query, args).fetchall()
@@ -26,19 +27,9 @@ def SearchServer(server, search):
     return server.search(search)
 def ShowsPerServer(server):
     print(f'Getting shows from playlist(s) on {server.friendlyName}...')
-    MyShows = []
-    for playlist in server.playlists():
-        pshows = []
-        for ep in playlist.items():
-            try:
-                epT = ep.grandparentTitle
-            except:
-                epT = ep.originalTitle
-            if epT not in pshows:
-                pshows.append(epT)
-    for show in pshows:
-        if show not in MyShows:
-            MyShows.append(show)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MyShows = [[ep.grandparentTitle if ep.type == 'episode' else ep.originalTitle for ep in pla] for pla in connected.playlists()]
+    updated = [item for sublist in MyShows for item in sublist]
     return MyShows
 def ShowsIFollow(servershows):
     for show in servershows:
@@ -197,8 +188,12 @@ while True:
         CallDB('''CREATE TABLE shows
         (ID int, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT, Length INT)''')
         showDB.commit()
+        CallDB('''CREATE TABLE shows
+        (ID int, Type TEXT, Show TEXT)''')
+        for server in config.servers:
+            connected = ServerConnect(server)
+            ShowsPerServer(connected)
         print('DB created!')
-        updatedatabase()
     elif command.lower() == 'update':
         updatedatabase()
     elif command == '':
