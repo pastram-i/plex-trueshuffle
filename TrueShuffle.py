@@ -2,11 +2,9 @@ from plexapi.myplex import MyPlexAccount
 from plexapi.utils import millisecondToHumanstr
 from plexapi.library import Library, Hub
 import plexapi.video, plexapi.audio
-import config, random, sqlite3
-from pprint import pprint
+import config, sqlite3
 from datetime import datetime
-
-pprint([ep.grandparentTitle for ep in [list(set([p.items() for p in connected.playlists()][0]))]])
+from pprint import pprint
 
 showDB = sqlite3.connect('myShows.db')
 c = showDB.cursor()
@@ -27,14 +25,12 @@ def SearchServer(server, search):
     return server.search(search)
 def ShowsPerServer(server):
     print(f'Getting shows from playlist(s) on {server.friendlyName}...')
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ### Need to add movies to this list, potentially other types of media.
     MyShows = [[ep.grandparentTitle if ep.type == 'episode' else ep.originalTitle for ep in pla] for pla in connected.playlists()]
-    updated = [item for sublist in MyShows for item in sublist]
-    return MyShows
+    return list({item for sublist in MyShows for item in sublist})
 def ShowsIFollow(servershows):
     for show in servershows:
-        if show not in AllMyShows:
-            AllMyShows.append(show)
+        CallDB('''INSERT INTO shows (Show) SELECT ? WHERE NOT EXISTS(SELECT 1 FROM shows WHERE Show = ?)''',(show,show))
 def Welcome():
     print('Type "help" for a list of commands.')
 def PlayInfo(play):
@@ -79,12 +75,27 @@ Length (HH:MM:SS:MMMM): {}
     '''.format(play.originalTitle,play.parentTitle,play.title,millisecondToHumanstr(play.duration))
     )
 def ViewCountUpdate(show):
+    i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
     for server in config.servers:
         connected = ServerConnect(server)
-        alleps = [item.episodes() for item in SearchServer(connected, show) if 'Show' in str(type(item))]
-        for ep in alleps[0] or []:
-            CallDB('''UPDATE shows SET ViewCount = ? WHERE Show = ? AND Episode = ? AND Server = ?''',(ep.viewCount,show,ep.seasonEpisode,server))
-            showDB.commit()
+        if alleps := [
+            item.episodes()
+            for item in SearchServer(connected, show)
+            if 'Show' in str(type(item))
+        ][0]:
+            for ep in alleps:
+                if ep.type=='episode':
+                    pprint((i,ep.type,ep.grandparentTitle,ep.parentTitle,ep.seasonEpisode,ep.title,server,ep.viewCount,ep.duration,ep.grandparentTitle,ep.seasonEpisode,server,))
+                    CallDB('''INSERT INTO episodes(ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS(SELECT * FROM episodes WHERE Show = ? AND Episode = ? AND Server = ?)''',(i,ep.type,ep.grandparentTitle,ep.parentTitle,ep.seasonEpisode,ep.title,server,ep.viewCount,ep.duration,ep.grandparentTitle,ep.seasonEpisode,server,))
+                    showDB.commit()
+                    CallDB('''UPDATE episodes SET ViewCount = ? WHERE Show = ? AND Episode = ? AND Server = ?''',(ep.viewCount,ep.grandparentTitle,ep.index,server,))
+                    showDB.commit()
+                elif ep.type=='track':
+                    CallDB('''INSERT INTO episodes(ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS(SELECT * FROM episodes WHERE Show = ? AND Episode = ? AND Server = ?)''',(i,ep.type,ep.originalTitle,ep.parentTitle,ep.index,ep.title,server,ep.viewCount,ep.duration,ep.originalTitle,ep.index,server,))
+                    showDB.commit()
+                    CallDB('''UPDATE episodes SET ViewCount = ? WHERE Show = ? AND Episode = ? AND Server = ?''',(ep.viewCount,ep.grandparentTitle,ep.index,server,))
+                    showDB.commit()
+            i+=1
 def CommandsInfo():
     print('''
     ****************************
@@ -111,34 +122,11 @@ This make take a little while....
           |(@_@)| |  
           |_____|,'
 ''')
-def AddToDB(show,i, serv):
-    try:
-        CallDB('''
-        INSERT INTO shows (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length)
-        VALUES (?,?,?,?,?,?,?,?,?);
-        ''',(i, str(type(show)),show.grandparentTitle, show.parentTitle, show.seasonEpisode, show.title, serv.friendlyName, show.viewCount, show.duration))
-    except:
-        CallDB('''
-        INSERT INTO shows (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length)
-        VALUES (?,?,?,?,?,?,?,?,?);
-        ''',(i, str(type(show)),show.originalTitle, show.parentTitle, show.index, show.title, serv.friendlyName, show.viewCount, show.duration))
-    showDB.commit()
 def RandomShow():
-    randShow = c.execute('''
-    SELECT Show from shows
-    GROUP BY Show
-    ORDER BY RANDOM()
-    LIMIT 1;
-    ''').fetchone()[0]
+    randShow = c.execute('''SELECT Show from shows GROUP BY Show ORDER BY RANDOM() LIMIT 1;''').fetchone()[0]
     print(f'Queueing up: {randShow}, updating view counts real quick though...')
     ViewCountUpdate(randShow)
-    showEps = c.execute('''
-    SELECT Show, Episode, SUM(ViewCount), Season, Title, Length
-    FROM shows
-    WHERE Show LIKE ?
-    GROUP BY Episode
-    ORDER BY Episode, ViewCount;
-    ''',('%'+randShow+'%',))
+    showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode, ViewCount;''',('%'+randShow+'%',))
     v=0
     for episode in showEps:
         if episode[2] < v or episode[2] == 0:
@@ -147,34 +135,6 @@ def RandomShow():
         else:
             v+=1
             continue
-def updatedatabase():
-    startime = datetime.now()
-    dbcount = CallDB('''SELECT COUNT(*) FROM shows''')[0][0]
-    ProvideMilk()
-    for server in config.servers:
-        connected = ServerConnect(server)
-        sps = ShowsPerServer(connected)
-        ShowsIFollow(sps)
-    for show in AllMyShows:
-        for server in config.servers:
-            connected = ServerConnect(server)
-            SearchShow = SearchServer(connected, show)
-            for ss in SearchShow:
-                if 'Show' in str(type(ss)):
-                    alleps = ss.episodes()
-                    WhatsInDB = CallDB('''SELECT DISTINCT Show, Episode, Server FROM shows WHERE Show = ? AND Server = ?''',(show,server))
-                    for ep in alleps:
-                        if (ep.grandparentTitle, ep.seasonEpisode,server) in WhatsInDB:
-                            break
-                        elif (ep.grandparentTitle, ep.index,server) in WhatsInDB:
-                            break
-                        else:
-                            dbcount+=1
-                            AddToDB(ep,dbcount, connected)
-                alleps = []
-    showDB.commit()
-    endtime = datetime.now()
-    print(f'DB updated! Time elapsed: {((endtime-startime).seconds)/60} minutes')
 
 print('Welcome to the Plex Queue Shuffle!')
 
@@ -184,35 +144,44 @@ while True:
     if command.lower() == 'help':
         CommandsInfo()
     elif command.lower() == 'create':
+        startime = datetime.now()
         CallDB(''' DROP TABLE IF EXISTS shows''')
-        CallDB('''CREATE TABLE shows
+        CallDB(''' DROP TABLE IF EXISTS episodes''')
+        CallDB('''CREATE TABLE episodes
         (ID int, Type TEXT, Show TEXT, Season TEXT, Episode TEXT, Title TEXT, Server TEXT, ViewCount INT, Length INT)''')
-        showDB.commit()
         CallDB('''CREATE TABLE shows
-        (ID int, Type TEXT, Show TEXT)''')
+        (Type TEXT, Show TEXT)''')
         for server in config.servers:
             connected = ServerConnect(server)
-            ShowsPerServer(connected)
-        print('DB created!')
+            ShowsIFollow(ShowsPerServer(connected))
+        showDB.commit()
+        endtime = datetime.now()
+        print(f'DB created! Time elapsed: {((endtime-startime).seconds)/60} minutes')
     elif command.lower() == 'update':
-        updatedatabase()
+        ProvideMilk
+        startime = datetime.now()
+        showlist = CallDB('''SELECT Show FROM shows''')[0]
+        for show in showlist:
+            ViewCountUpdate(show)
+        endtime = datetime.now()
+        print(f'DB updated! Time elapsed: {((endtime-startime).seconds)/60} minutes')
     elif command == '':
         plextv_clients = [x for x in MyPlexAccount(config.username,config.password).resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
         upnext = RandomShow()
+        ViewCountUpdate(upnext[0])
         for server in config.servers:
             connected = ServerConnect(server)
-            epS = [item.episodes() for item in SearchServer(connected, upnext[0]) if 'Show' in str(type(item))]
-            for ep in epS[0] or []:
-                try:
+            if epS := [item.episodes() for item in SearchServer(connected, upnext[0]) if 'Show' in str(type(item))][0]:
+                for ep in epS:
+                    ### Need to add movies to this list, potentially other types of media.
                     if ep.seasonEpisode == upnext[1]:
-                            PlayInfo(ep)
-                            client = plextv_clients[0].connect()
-                            client.playMedia(ep)
-                except:
-                    if ep.index == upnext[1]:
-                            PlayInfo(ep)
-                            client = plextv_clients[0].connect()
-                            client.playMedia(ep)
+                        PlayInfo(ep)
+                        client = plextv_clients[0].connect()
+                        client.playMedia(ep)
+                    elif ep.index == upnext[1]:
+                        PlayInfo(ep)
+                        client = plextv_clients[0].connect()
+                        client.playMedia(ep)
     elif command.lower() in ['exit', 'quit']:
         break
     else:
