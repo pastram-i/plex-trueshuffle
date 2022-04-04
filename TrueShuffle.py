@@ -39,7 +39,7 @@ def ShowsIFollow(servershows):
 def Welcome():
     print('Type "help" for a list of commands.')
 def PlayInfo(play):
-    try:
+    if play.type == 'episode':
         print(
     '''
 ----------------------------
@@ -68,7 +68,7 @@ Length (HH:MM:SS:MMMM): {}
                 else:
                     p+=1
                     continue
-    except:
+    elif play.type == 'track':
         print(
     '''
 ----------------------------
@@ -79,11 +79,13 @@ Length (HH:MM:SS:MMMM): {}
 ----------------------------
     '''.format(play.originalTitle,play.parentTitle,play.title,millisecondToHumanstr(play.duration))
     )
+    else:
+        print('Media type currently not supported.')
 def ViewCountUpdate(show):
     for serv in conservs:
         if serv != ':(':
             i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
-            alleps = [item.episodes() for item in SearchServer(serv, show) if 'Show' in str(type(item))]
+            alleps = [item.episodes() for item in SearchServer(serv, show) if item.type == 'show']+[item.tracks() for item in SearchServer(serv, show) if item.type == 'artist']
             if alleps:
                 alreadyin = CallDB('''SELECT Show, Episode, Server FROM episodes WHERE Show = ? AND Server = ?''',(show,serv.friendlyName))
                 for ep in alleps[0]:
