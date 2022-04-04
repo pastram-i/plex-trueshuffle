@@ -184,6 +184,7 @@ while True:
                 try:
                     epS = [ep for ep in [item.episodes() for item in SearchServer(serv, upnext[0]) if 'Show' in str(type(item))][0] if upnext[1] in ep.seasonEpisode]
                     PlayInfo(epS[0])
+                    print(f'Connected to {plextv_clients[0].name} on {plextv_clients[0].platform}, {plextv_clients[0].device} using {plextv_clients[0].product}...')
                     client = plextv_clients[0].connect()
                     client.playMedia(epS[0])
                     break
