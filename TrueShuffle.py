@@ -82,28 +82,28 @@ Length (HH:MM:SS:MMMM): {}
     )
 def ViewCountUpdate(show):
     for serv in conservs:
-            if serv != ':(':
-                i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
-                alleps = [item.episodes() for item in SearchServer(serv, show) if 'Show' in str(type(item))]
-                if alleps:
-                    alreadyin = CallDB('''SELECT Show, Episode, Server FROM episodes WHERE Show = ? AND Server = ?''',(show,serv.friendlyName))
-                    for ep in alleps[0]:
-                        if ep.type=='episode':
-                            if [ep.grandparentTitle, ep.seasonEpisode, serv.friendlyName] not in alreadyin:
-                                if ep.seasonEpisode[:3] == 's00' and ep.parentTitle.lower() == 'specials':
-                                    seasonEpisode = 's99'+ep.seasonEpisode[3:]
-                                else:
-                                    seasonEpisode = ep.seasonEpisode
-                                CallDB('''INSERT INTO episodes (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) VALUES (?,?,?,?,?,?,?,?,?)''',(i,ep.type,ep.grandparentTitle,ep.parentTitle,seasonEpisode,ep.title,serv.friendlyName,ep.viewCount,ep.duration))
-                                i+=1
+        if serv != ':(':
+            i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
+            alleps = [item.episodes() for item in SearchServer(serv, show) if 'Show' in str(type(item))]
+            if alleps:
+                alreadyin = CallDB('''SELECT Show, Episode, Server FROM episodes WHERE Show = ? AND Server = ?''',(show,serv.friendlyName))
+                for ep in alleps[0]:
+                    if ep.type=='episode':
+                        if (ep.grandparentTitle, ep.seasonEpisode, serv.friendlyName) not in alreadyin:
+                            if ep.seasonEpisode[:3] == 's00' and ep.parentTitle.lower() == 'specials':
+                                seasonEpisode = 's99'+ep.seasonEpisode[3:]
                             else:
-                                CallDB('''UPDATE episodes SET ViewCount = ? WHERE Show = ? AND Server = ? AND Episode = ?''',(ep.viewCount, show,serv.friendlyName,ep.seasonEpisode))
-                        elif ep.type=='track':
-                            if [ep.originalTitle, ep.index, serv.friendlyName] not in alreadyin:
-                                CallDB('''INSERT INTO episodes (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) VALUES (?,?,?,?,?,?,?,?,?)''',(i,ep.type,ep.originalTitle,ep.parentTitle,ep.index,ep.title,serv.friendlyName,ep.viewCount,ep.duration))
-                                i+=1
-                            else:
-                                CallDB('''UPDATE episodes SET ViewCount = ? WHERE Show = ? AND Server = ? AND Episode = ?''',(ep.viewCount, show,serv.friendlyName,ep.index))
+                                seasonEpisode = ep.seasonEpisode
+                            CallDB('''INSERT INTO episodes (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) VALUES (?,?,?,?,?,?,?,?,?)''',(i,ep.type,ep.grandparentTitle,ep.parentTitle,seasonEpisode,ep.title,serv.friendlyName,ep.viewCount,ep.duration))
+                            i+=1
+                        else:
+                            CallDB('''UPDATE episodes SET ViewCount = ? WHERE Show = ? AND Server = ? AND Episode = ?''',(ep.viewCount, show,serv.friendlyName,ep.seasonEpisode))
+                    elif ep.type=='track':
+                        if (ep.originalTitle, ep.index, serv.friendlyName) not in alreadyin:
+                            CallDB('''INSERT INTO episodes (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) VALUES (?,?,?,?,?,?,?,?,?)''',(i,ep.type,ep.originalTitle,ep.parentTitle,ep.index,ep.title,serv.friendlyName,ep.viewCount,ep.duration))
+                            i+=1
+                        else:
+                            CallDB('''UPDATE episodes SET ViewCount = ? WHERE Show = ? AND Server = ? AND Episode = ?''',(ep.viewCount, show,serv.friendlyName,ep.index))
 def CommandsInfo():
     print('''
     ****************************
@@ -184,7 +184,7 @@ while True:
                 try:
                     epS = [ep for ep in [item.episodes() for item in SearchServer(serv, upnext[0]) if 'Show' in str(type(item))][0] if upnext[1] in ep.seasonEpisode]
                     PlayInfo(epS[0])
-                    print(f'Connected to {plextv_clients[0].name} on {plextv_clients[0].platform}, {plextv_clients[0].device} using {plextv_clients[0].product}...')
+                    print(f'Connecting to {plextv_clients[0].name} on {plextv_clients[0].platform}, {plextv_clients[0].device} using {plextv_clients[0].product}...')
                     client = plextv_clients[0].connect()
                     client.playMedia(epS[0])
                     break
