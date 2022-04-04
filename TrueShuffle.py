@@ -27,13 +27,12 @@ def SearchServer(server, search):
     else:
         return []
 def ShowsPerServer(server):
-    if server != ':(':
-        print(f'Getting shows from playlist(s) on {server.friendlyName}...')
-    ### Need to add movies to this list, potentially other types of media.
-        MyShows = [[ep.grandparentTitle if ep.type == 'episode' else ep.originalTitle for ep in pla] for pla in server.playlists()]
-        return list({item for sublist in MyShows for item in sublist})
-    else:
+    if server == ':(':
         return []
+    print(f'Getting shows from playlist(s) on {server.friendlyName}...')
+    ### Need to add movies to this list, potentially other types of media.
+    MyShows = [[ep.grandparentTitle if ep.type == 'episode' else ep.originalTitle for ep in pla] for pla in server.playlists()]
+    return list({item for sublist in MyShows for item in sublist})
 def ShowsIFollow(servershows):
     for show in servershows:
         CallDB('''INSERT INTO shows (Show) SELECT ? WHERE NOT EXISTS(SELECT 1 FROM shows WHERE Show = ?)''',(show,show))
@@ -91,7 +90,7 @@ def ViewCountUpdate(show):
                     if ep.type=='episode':
                         if (ep.grandparentTitle, ep.seasonEpisode, serv.friendlyName) not in alreadyin:
                             if ep.seasonEpisode[:3] == 's00' and ep.parentTitle.lower() == 'specials':
-                                seasonEpisode = 's99'+ep.seasonEpisode[3:]
+                                seasonEpisode = f's99{ep.seasonEpisode[3:]}'
                             else:
                                 seasonEpisode = ep.seasonEpisode
                             CallDB('''INSERT INTO episodes (ID, Type, Show, Season, Episode, Title, Server, ViewCount, Length) VALUES (?,?,?,?,?,?,?,?,?)''',(i,ep.type,ep.grandparentTitle,ep.parentTitle,seasonEpisode,ep.title,serv.friendlyName,ep.viewCount,ep.duration))
