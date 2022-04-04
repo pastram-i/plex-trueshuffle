@@ -82,7 +82,7 @@ def ViewCountUpdate(show):
     for serv in conservs:
         if serv != ':(':
             i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
-            print(f'Searching for {show} on {serv}...')
+            print(f'Searching for {show} on {serv.friendlyName}...')
             ### Needs to be updated for new media types
             alleps = [item.episodes() for item in SearchServer(serv, show) if item.type == 'show']+[item.tracks() for item in SearchServer(serv, show) if item.type == 'artist']
             if alleps:
@@ -146,11 +146,14 @@ def RandomShow():
             continue
 
 print('Welcome to the Plex Queue Shuffle!')
+startime = datetime.now()
 print('Connected to your servers real quick...')
 conservs = [ServerConnect(server) for server in config.servers]
 print('Connected to your client real quick...')
 plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
 client = plextv_clients[0].connect()
+endtime = datetime.now()
+print(f'Startup done! Time elapsed: {((endtime-startime).seconds)/60} minutes')
 
 while True:
     Welcome()
