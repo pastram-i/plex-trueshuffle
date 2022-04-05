@@ -132,13 +132,17 @@ def RandomShow():
     print(f'Queueing up: {randShow}, updating view counts real quick though...')
     ViewCountUpdate(randShow)
     showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',('%'+randShow+'%',)).fetchall()
-    v=len(showEps)
-    while v <= len(showEps):
-        if showEps[v-1][2] >= showEps[v-2][2]:
-            v-=1
+    for ep in showEps:
+        if ep[2].startswith('s00'):
+            ep[2] = f's99{ep[2][3:]}'
+    v=0
+    while v!=len(showEps)-1:
+        if showEps[v][2] <= showEps[v+1][2]:
+            v+=1
         else:
             print(f'Queueing up: {showEps[v][1]}')
-            return showEps[v-1]
+            return showEps[v]
+    print(f'Queueing up: {showEps[0][1]}')
     return showEps[0]
 def PlayMedia(upnext):
     for serv in conservs:
