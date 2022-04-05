@@ -138,8 +138,8 @@ def RandomShow():
     ViewCountUpdate(randShow)
     showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',('%'+randShow+'%',)).fetchall()
     for ep in showEps:
-        if ep[2].startswith('s00'):
-            ep[2] = f's99{ep[2][3:]}'
+        if type(ep[1]) == str and ep[1].startswith('s00'):
+            ep[1] = f's99{ep[1][3:]}'
     v=0
     while v!=len(showEps)-1:
         if showEps[v][2] <= showEps[v+1][2]:
@@ -150,7 +150,7 @@ def RandomShow():
     print(f'Queueing up: {showEps[0][1]}')
     return showEps[0]
 def PlayMedia(upnext):
-    print(f'Searching for {upnext} on...')
+    print(f'Searching for {upnext[0]} on...')
     for serv in conservs:
             if serv != ':(':
                 print(serv.friendlyName)
@@ -158,14 +158,14 @@ def PlayMedia(upnext):
                 if upnext[5] == 'episode':
                     eps = [item.episodes() for item in SearchServer(serv, upnext[0]) if item.type=='show']
                     if eps:
-                        return [ep for ep in eps[0] if upnext[1] in ep.seasonEpisode]
+                        return [ep for ep in eps[0] if upnext[1] == ep.seasonEpisode]
                 elif upnext[5] =='track':
                     eps = [item.tracks() for item in SearchServer(serv, upnext[0]) if item.type=='artist']
                     if eps:
-                        return [ep for ep in eps[0] if upnext[1] in ep.index]
+                        return [ep for ep in eps[0] if upnext[1] == ep.index]
                 else:
                     print('Not on this server, trying next')
-    print('Couldn\'t find a server with this show, try again')
+    print('Couldn\'t find a server with this, try again')
     return False
 
 print('Welcome to the Plex Queue Shuffle!')
@@ -178,7 +178,7 @@ plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and
 client = plextv_clients[0].connect()
 endtime = datetime.now()
 print('Client Connected!')
-print(f'Startup done! Time elapsed: {((endtime-startime).seconds)/60} minutes')
+print(f'Startup done! Time elapsed: {round(((endtime-startime).seconds)/60,2)} minutes')
 
 while True:
     Welcome()
@@ -198,7 +198,7 @@ while True:
                 ShowsIFollow(ShowsPerServer(serv))
             showDB.commit()
         endtime = datetime.now()
-        print(f'DB created! Time elapsed: {((endtime-startime).seconds)/60} minutes')
+        print(f'DB created! Time elapsed: {round(((endtime-startime).seconds)/60,2)} minutes')
     elif command.lower() == 'update':
         ProvideMilk()
         startime = datetime.now()
@@ -208,7 +208,7 @@ while True:
             ViewCountUpdate(show[0])
             showDB.commit()
         endtime = datetime.now()
-        print(f'DB updated! Time elapsed: {((endtime-startime).seconds)/60} minutes')
+        print(f'DB updated! Time elapsed: {round(((endtime-startime).seconds)/60,2)} minutes')
     elif command == '':
         upnext = RandomShow()
         epS = PlayMedia(upnext)
