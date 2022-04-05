@@ -139,10 +139,10 @@ def RandomShow():
     showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',('%'+randShow+'%',)).fetchall()
     for ep in showEps:
         if type(ep[1]) == str and ep[1].startswith('s00'):
-            ep[1] = f's99{ep[1][3:]}'
+            showEps.append(showEps.pop(showEps.index(ep)))
     v=0
     while v!=len(showEps)-1:
-        if showEps[v][2] <= showEps[v+1][2]:
+        if showEps[v][2] >= showEps[v+1][2]:
             v+=1
         else:
             print(f'Queueing up: {showEps[v][1]}')
@@ -217,7 +217,7 @@ while True:
             print(f'Connecting to {plextv_clients[0].name} on {plextv_clients[0].platform}, {plextv_clients[0].device} using {plextv_clients[0].product}...')
             client.playMedia(epS[0])
         else:
-            break
+            print('I wasn\'t able to play this for some reason, try again')
     elif command.lower() in ['exit', 'quit']:
         break
     else:
