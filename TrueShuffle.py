@@ -134,7 +134,7 @@ This make take a little while....
 def RandomShow():
     randShow = c.execute('''SELECT Show from shows GROUP BY Show ORDER BY RANDOM() LIMIT 1;''').fetchone()[0]
     print(f'Queueing up: {randShow}, updating view counts real quick though...')
-    print(f'Searching for {show} on...')
+    print(f'Searching for {randShow} on...')
     ViewCountUpdate(randShow)
     showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',('%'+randShow+'%',)).fetchall()
     for ep in showEps:
@@ -170,12 +170,14 @@ def PlayMedia(upnext):
 
 print('Welcome to the Plex Queue Shuffle!')
 startime = datetime.now()
-print('Connected to your servers real quick...')
+print('Connecting to your servers real quick...')
 conservs = [ServerConnect(server) for server in config.servers]
+print('Servers Connected!')
 print('Connecting to your client real quick...')
 plextv_clients = [x for x in myAccount.resources() if "player" in x.provides and x.presence and x.publicAddressMatches]
 client = plextv_clients[0].connect()
 endtime = datetime.now()
+print('Client Connected!')
 print(f'Startup done! Time elapsed: {((endtime-startime).seconds)/60} minutes')
 
 while True:
@@ -202,7 +204,7 @@ while True:
         startime = datetime.now()
         showlist = CallDB('''SELECT Show FROM shows''')
         for show in showlist:
-            print(f'Searching for {show} on...')
+            print(f'Searching for {show[0]} on...')
             ViewCountUpdate(show[0])
             showDB.commit()
         endtime = datetime.now()
