@@ -82,7 +82,7 @@ def ViewCountUpdate(show):
     for serv in conservs:
         if serv != ':(':
             i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
-            print(f'Searching for {show} on {serv.friendlyName}...')
+            print(serv.friendlyName)
             ### Needs to be updated for new media types
             alleps = [item.episodes() for item in SearchServer(serv, show) if item.type == 'show']+[item.tracks() for item in SearchServer(serv, show) if item.type == 'artist']
             if alleps:
@@ -106,12 +106,16 @@ def CommandsInfo():
     ****************************
 Type "help" for this list of commands
 Type "create" to build DB
-    - If one exists it will overwrite it; use to reset as needed.
-    - Must run "update" after to populate.
+    - Required to run first time
+    - If one exists it will overwrite it; use to reset as needed
 Type "update" to refresh DB
-    - Will try to find new or missing episodes, for shows in your DB, from your sources.
+    - Updates the DB with all episodes from all servers for your shows in playlists
+    - Can be used to find new or missing episodes as well
+    - May take a while to complete
 Press enter to play media
-    - Requires DB to exist, will randomly choose a show and play the next episode.
+    - Requires DB to exist
+    - Will randomly choose a show and play the next episode
+    - Next episode is based on your View Count
 Type "quit" to exit
     ****************************\n''')
 def ProvideMilk():
@@ -130,6 +134,7 @@ This make take a little while....
 def RandomShow():
     randShow = c.execute('''SELECT Show from shows GROUP BY Show ORDER BY RANDOM() LIMIT 1;''').fetchone()[0]
     print(f'Queueing up: {randShow}, updating view counts real quick though...')
+    print(f'Searching for {show} on...')
     ViewCountUpdate(randShow)
     showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',('%'+randShow+'%',)).fetchall()
     for ep in showEps:
@@ -145,8 +150,10 @@ def RandomShow():
     print(f'Queueing up: {showEps[0][1]}')
     return showEps[0]
 def PlayMedia(upnext):
+    print(f'Searching for {upnext} on...')
     for serv in conservs:
             if serv != ':(':
+                print(serv.friendlyName)
                 ### Needs to be updated for new media types
                 if upnext[5] == 'episode':
                     eps = [item.episodes() for item in SearchServer(serv, upnext[0]) if item.type=='show']
@@ -195,6 +202,7 @@ while True:
         startime = datetime.now()
         showlist = CallDB('''SELECT Show FROM shows''')
         for show in showlist:
+            print(f'Searching for {show} on...')
             ViewCountUpdate(show[0])
             showDB.commit()
         endtime = datetime.now()
