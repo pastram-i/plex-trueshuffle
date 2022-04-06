@@ -139,15 +139,14 @@ def RandomShow():
     for ep in showEps:
         if type(ep[1]) == str and ep[1].startswith('s00'):
             showEps.append(showEps.pop(showEps.index(ep)))
-    v=0
-    while v!=len(showEps)-1:
-        if showEps[v][2] > showEps[v+1][2]:
-            v+=1
+    v=1
+    while v!=len(showEps):
+        if showEps[v-1][2]<showEps[v][2]:
+            print(f'Queueing up: {showEps[v-1][1]}')
+            return showEps[v-1]
         else:
-            print(f'Queueing up: {showEps[v][1]}')
-            return showEps[v]
-    print(f'Queueing up: {showEps[0][1]}')
-    return showEps[0]
+            v+=1
+    return showEps[0] if showEps[0][2]==0 else showEps[-1]
 def PlayMedia(upnext):
     print(f'Searching for {upnext[0]} on...')
     for serv in conservs:
