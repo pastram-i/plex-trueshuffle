@@ -141,7 +141,7 @@ def RandomShow():
             showEps.append(showEps.pop(showEps.index(ep)))
     v=0
     while v!=len(showEps)-1:
-        if showEps[v][2] >= showEps[v+1][2]:
+        if showEps[v][2] > showEps[v+1][2]:
             v+=1
         else:
             print(f'Queueing up: {showEps[v][1]}')
