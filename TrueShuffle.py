@@ -4,7 +4,6 @@ from plexapi.library import Library, Hub
 import plexapi.video, plexapi.audio
 import config, sqlite3
 from datetime import datetime
-from pprint import pprint
 
 showDB = sqlite3.connect('myShows.db')
 c = showDB.cursor()
