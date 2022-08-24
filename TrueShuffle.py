@@ -82,9 +82,15 @@ def ViewCountUpdate(show):
         if serv != ':(':
             i = CallDB('''SELECT COUNT(ID) FROM episodes''')[0][0]
             print(serv.friendlyName)
-            ### Needs to be updated for new media types
-            alleps = [item.episodes() for item in SearchServer(serv, show) if item.type == 'show']+[item.tracks() for item in SearchServer(serv, show) if item.type == 'artist']
-            if alleps:
+            if alleps := [
+                item.episodes()
+                for item in SearchServer(serv, show)
+                if item.type == 'show'
+            ] + [
+                item.tracks()
+                for item in SearchServer(serv, show)
+                if item.type == 'artist'
+            ]:
                 alreadyin = CallDB('''SELECT Show, Episode, Server FROM episodes WHERE Show = ? AND Server = ?''',(show,serv.friendlyName))
                 for ep in alleps[0]:
                     ### Needs to be updated for new media types
@@ -135,7 +141,11 @@ def RandomShow():
     print(f'Queueing up: {randShow}, updating view counts real quick though...')
     print(f'Searching for {randShow} on...')
     ViewCountUpdate(randShow)
-    showEps = c.execute('''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',('%'+randShow+'%',)).fetchall()
+    showEps = c.execute(
+        '''SELECT Show, Episode, SUM(ViewCount), Season Title, Length, Type FROM episodes WHERE Show LIKE ? GROUP BY Episode ORDER BY Episode;''',
+        (f'%{randShow}%',),
+    ).fetchall()
+
     for ep in showEps:
         if type(ep[1]) == str and ep[1].startswith('s00'):
             showEps.append(showEps.pop(showEps.index(ep)))
@@ -150,19 +160,25 @@ def RandomShow():
 def PlayMedia(upnext):
     print(f'Searching for {upnext[0]} on...')
     for serv in conservs:
-            if serv != ':(':
-                print(serv.friendlyName)
+        if serv != ':(':
+            print(serv.friendlyName)
                 ### Needs to be updated for new media types
-                if upnext[5] == 'episode':
-                    eps = [item.episodes() for item in SearchServer(serv, upnext[0]) if item.type=='show']
-                    if eps:
-                        return [ep for ep in eps[0] if upnext[1] == ep.seasonEpisode]
-                elif upnext[5] =='track':
-                    eps = [item.tracks() for item in SearchServer(serv, upnext[0]) if item.type=='artist']
-                    if eps:
-                        return [ep for ep in eps[0] if upnext[1] == ep.index]
-                else:
-                    print('Not on this server, trying next')
+            if upnext[5] == 'episode':
+                if eps := [
+                    item.episodes()
+                    for item in SearchServer(serv, upnext[0])
+                    if item.type == 'show'
+                ]:
+                    return [ep for ep in eps[0] if upnext[1] == ep.seasonEpisode]
+            elif upnext[5] =='track':
+                if eps := [
+                    item.tracks()
+                    for item in SearchServer(serv, upnext[0])
+                    if item.type == 'artist'
+                ]:
+                    return [ep for ep in eps[0] if upnext[1] == ep.index]
+            else:
+                print('Not on this server, trying next')
     print('Couldn\'t find a server with this, try again')
     return False
 
@@ -209,8 +225,7 @@ while True:
         print(f'DB updated! Time elapsed: {round(((endtime-startime).seconds)/60,2)} minutes')
     elif command == '':
         upnext = RandomShow()
-        epS = PlayMedia(upnext)
-        if epS:
+        if epS := PlayMedia(upnext):
             PlayInfo(epS[0])
             print(f'Connecting to {plextv_clients[0].name} on {plextv_clients[0].platform}, {plextv_clients[0].device} using {plextv_clients[0].product}...')
             client.playMedia(epS[0])
